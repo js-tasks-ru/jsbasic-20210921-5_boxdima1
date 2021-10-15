@@ -2,16 +2,16 @@ let calculator = {
   a: 0,
   b: 0,
   read(a, b) {
-    self.a = a;
-    self.b = b;
+    this.a = a;
+    this.b = b;
   },
 
   sum() {
-    return self.a + self.b;
+    return this.a + this.b;
   },
 
   mul() {
-    return self.a * self.b;
+    return this.a * this.b;
   }
 };
 
