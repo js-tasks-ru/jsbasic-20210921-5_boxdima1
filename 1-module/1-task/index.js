@@ -1,3 +1,7 @@
 function factorial(n) {
-  // ваш код...
+  let res = 1;
+  for (const i of Array(n).keys()) {
+    res *= (i + 1);
+  }
+  return res;
 }
