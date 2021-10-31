@@ -8,28 +8,51 @@ export default class Cart {
 
   constructor(cartIcon) {
     this.cartIcon = cartIcon;
-
+    this.modalCart = new Modal();
     this.addEventListeners();
   }
 
   addProduct(product) {
-    // СКОПИРУЙТЕ СЮДЯ СВОЙ КОД
+    if (product) {
+      let cartItem = this.cartItems.find(item => item.id === product.id);
+      if (cartItem) {
+        cartItem.count += 1;
+      } else {
+        cartItem = {
+          ...product,
+          count: 1
+        };
+        this.cartItems.push(cartItem);
+      }
+      this.onProductUpdate(cartItem);
+    }
   }
 
   updateProductCount(productId, amount) {
-    // СКОПИРУЙТЕ СЮДЯ СВОЙ КОД
+    let cartItem = this.cartItems.find(item => item.id === productId);
+    if (cartItem) {
+      cartItem.count += amount;
+      if (cartItem.count === 0) {
+        this.cartItems = this.cartItems.filter(item => item.id !== cartItem.id);
+      }
+      this.onProductUpdate(cartItem);
+    }
   }
 
   isEmpty() {
-    // СКОПИРУЙТЕ СЮДЯ СВОЙ КОД
+    return this.cartItems.length === 0;
   }
 
   getTotalCount() {
-    // СКОПИРУЙТЕ СЮДЯ СВОЙ КОД
+    return this.cartItems.reduce((acc, item) => (
+      acc + item.count
+    ), 0);
   }
 
   getTotalPrice() {
-    // СКОПИРУЙТЕ СЮДЯ СВОЙ КОД
+    return this.cartItems.reduce((acc, item) => (
+      acc + item.count * item.price
+    ), 0);
   }
 
   renderProduct(product, count) {
@@ -73,9 +96,7 @@ export default class Cart {
         <div class="cart-buttons__buttons btn-group">
           <div class="cart-buttons__info">
             <span class="cart-buttons__info-text">total</span>
-            <span class="cart-buttons__info-price">€${this.getTotalPrice().toFixed(
-              2
-            )}</span>
+            <span class="cart-buttons__info-price">€${this.getTotalPrice().toFixed(2)}</span>
           </div>
           <button type="submit" class="cart-buttons__button btn-group__button button">order</button>
         </div>
@@ -83,18 +104,93 @@ export default class Cart {
     </form>`);
   }
 
+  orderSuccessHtml() {
+    return `
+      <div class="modal__body-inner">
+        <p>
+          Order successful! Your order is being cooked :) <br>
+          We’ll notify you about delivery time shortly.<br>
+          <img src="/assets/images/delivery.gif">
+        </p>
+      </div>
+    `;
+  }
+
   renderModal() {
-    // ...ваш код
+    this.modalCart.setTitle("Your order");
+    this.setModalBody();
+    const modalBody = this.modalCart.modal.querySelector('.modal__body');
+    const cartForm = this.modalCart.modal.querySelector('.cart-form');
+    modalBody.addEventListener('click', this.updateProductCountHandler);
+    cartForm.addEventListener('submit', this.onSubmit);
+    this.modalCart.open();
+  }
+
+  updateProductCountHandler = (event) => {
+    const productCard = event.target.closest('[data-product-id]');
+    if (productCard) {
+      const productId = productCard.dataset.productId;
+      const plusBtn = event.target.closest('.cart-counter__button_plus');
+      const minusBtn = event.target.closest('.cart-counter__button_minus');
+      if (plusBtn) {
+        this.updateProductCount(productId, 1);
+      } else if (minusBtn) {
+        this.updateProductCount(productId, -1);
+      }
+    }
+  }
+
+  setModalBody() {
+    const div = document.createElement('div');
+    this.cartItems.forEach(item => div.append(this.renderProduct(item, item.count)));
+    div.append(this.renderOrderForm());
+    this.modalCart.setBody(div);
   }
 
   onProductUpdate(cartItem) {
-    // ...ваш код
-
+    if (document.body.classList.contains('is-modal-open')) {
+      if (this.isEmpty()) {
+        this.modalCart.close();
+      } else {
+        const productId = cartItem.id;
+        if (cartItem.count === 0) {
+          const productCard = this.modalCart.modal.querySelector(`[data-product-id="${productId}"]`);
+          productCard.remove();
+        } else {
+          let productCount = this.modalCart.modal.querySelector(`[data-product-id="${productId}"] .cart-counter__count`);
+          let productPrice = this.modalCart.modal.querySelector(`[data-product-id="${productId}"] .cart-product__price`);
+          let infoPrice = this.modalCart.modal.querySelector(`.cart-buttons__info-price`);
+          productCount.innerHTML = cartItem.count;
+          productPrice.innerHTML = `€${(cartItem.count * cartItem.price).toFixed(2)}`;
+          infoPrice.innerHTML = `€${this.getTotalPrice().toFixed(2)}`;
+        }
+      }
+    }
     this.cartIcon.update(this);
   }
 
-  onSubmit(event) {
-    // ...ваш код
+  onSubmit = (event) => {
+    event.preventDefault();
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    submitBtn.classList.add('is-loading');
+    const form = event.currentTarget;
+    fetch(
+      'https://httpbin.org/post',
+      {
+        method: 'POST',
+        body: new FormData(form)
+      }
+    ).then(response => {
+      if (response.status === 200) {
+        this.modalCart.setTitle('Success!');
+        this.cartItems = [];
+        this.cartIcon.update(this);
+        const modalInner = this.modalCart.modal.querySelector('.modal__body');
+        modalInner.innerHTML = this.orderSuccessHtml();
+      }
+    }).catch(error => {
+      console.log(error);
+    });
   };
 
   addEventListeners() {
