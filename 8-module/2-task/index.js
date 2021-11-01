@@ -31,10 +31,10 @@ export default class ProductGrid {
   updateFilter(filter) {
     this.filters = {...this.filters, ...filter};
     this.filteredProducts = this.products.filter(product => (
-      product.nuts !== this.filters.noNuts &&
-      (product.vegeterian === this.filters.vegeterianOnly || this.filters.vegeterianOnly === false) &&
-      (product.category === this.filters.category || this.filters.category === "") &&
-      product.spiciness <= this.filters.maxSpiciness
+      (product.nuts !== this.filters.noNuts || this.filters.noNuts === false)
+      && (product.vegeterian === this.filters.vegeterianOnly || this.filters.vegeterianOnly === false)
+      && (product.category === this.filters.category || this.filters.category === "")
+      && product.spiciness <= this.filters.maxSpiciness
     ));
     this.updateProducts();
   }

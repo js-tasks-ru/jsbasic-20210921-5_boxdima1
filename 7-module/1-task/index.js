@@ -25,6 +25,7 @@ export default class RibbonMenu {
 
   changeCategoryHandler = (event) => {
     if (event.target.tagName === 'A') {
+      event.preventDefault();
       let newSelectedCategory = event.target;
       let oldSelectedCategory = this._ribbonInner.querySelector('.ribbon__item_active');
       oldSelectedCategory.classList.remove('ribbon__item_active');

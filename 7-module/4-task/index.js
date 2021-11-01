@@ -9,10 +9,12 @@ export default class StepSlider {
 
   render() {
     this._slider = this.createSlider();
-    this.createSliderSteps();
-    this._slider.addEventListener('click', this.sliderStepHandler);
     this.thumb = this._slider.querySelector('.slider__thumb');
     this.progress = this._slider.querySelector('.slider__progress');
+    this.createSliderSteps();
+    let valuerPercents = this.value / (this.steps - 1) * 100;
+    this.changeSliderProgress(valuerPercents);
+    this._slider.addEventListener('click', this.sliderStepHandler);
     this.defaultDragAndDropOff();
     this.dragAndDropActivate();
   }
@@ -30,7 +32,7 @@ export default class StepSlider {
   onPointerUp = (event) => {
     document.removeEventListener('pointermove', this.onPointerMove);
     this._slider.classList.remove('slider_dragging');
-    this.thumb.onpointerup = null;
+    document.onpointerup = null;
     this.sliderStepHandler(event);
   }
 
@@ -103,7 +105,7 @@ export default class StepSlider {
     for (let i = 0; i <= this.steps - 1; i++) {
       const span = document.createElement('span');
       this.sliderSteps.append(span);
-      if (i === 0) {
+      if (i === this.value) {
         span.classList.add('slider__step-active');
       }
     }
