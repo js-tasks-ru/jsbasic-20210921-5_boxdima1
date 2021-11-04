@@ -28,8 +28,6 @@ export default class UserTable {
       }
       this.createBtn(row);
     }
-    const thead = document.querySelector('thead');
-    this.elem.insertAdjacentElement('afterbegin', thead);
   }
 
   createBtn(row) {

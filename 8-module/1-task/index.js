@@ -5,8 +5,6 @@ export default class CartIcon {
     this.render();
 
     this.addEventListeners();
-
-    this.initialTopCoord = this.elem.getBoundingClientRect().top + window.pageYOffset;
   }
 
   render() {
@@ -42,6 +40,9 @@ export default class CartIcon {
 
   updatePosition() {
     if (this.elem.offsetWidth) {
+      if (!this.initialTopCoord) {
+        this.initialTopCoord = this.elem.getBoundingClientRect().top + window.pageYOffset;
+      }
       let leftIndent = Math.min(
         document.querySelector('.container').getBoundingClientRect().right + 20,
         document.documentElement.clientWidth - this.elem.offsetWidth - 10
